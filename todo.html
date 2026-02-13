@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App với JSONbin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 5px;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            padding: 15px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        #taskList {
+            margin-top: 20px;
+        }
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f9f9f9;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .task-item:hover {
+            background: #f0f0f0;
+            transform: translateX(5px);
+        }
+        .task-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+            border-left-color: #4CAF50;
+        }
+        .task-text {
+            flex: 1;
+            cursor: pointer;
+            font-size: 16px;
+            color: #333;
+            user-select: none;
+        }
+        .task-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .task-actions button {
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+        .complete-btn {
+            background: #4CAF50;
+        }
+        .complete-btn:hover {
+            background: #45a049;
+        }
+        .delete-btn {
+            background: #f44336;
+        }
+        .delete-btn:hover {
+            background: #da190b;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 18px;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+            border-radius: 8px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c62828;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 My Todo List</h1>
+        <p class="subtitle">💾 Dữ liệu lưu trên JSONbin Cloud - chia sẻ được giữa nhiều thiết bị!</p>
+        
+        <div class="input-group">
+            <input type="text" id="taskInput" placeholder="Thêm công việc mới...">
+            <button onclick="addTask()">➕ Thêm</button>
+        </div>
+        
+        <div id="taskList">
+            <div class="loading">⏳ Đang tải dữ liệu...</div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalTasks">0</div>
+                <div class="stat-label">Tổng số</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="activeTasks">0</div>
+                <div class="stat-label">Đang làm</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="completedTasks">0</div>
+                <div class="stat-label">Hoàn thành</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const MASTER_KEY = '$2a$10$kUox6iwqfStGRYQ/nK2×3ugpyFeg8uio0kLpHd6fPXH1Hl8i6LAwC';
+        const BIN_ID = '698f39b0ae596e708f281c07';
+        const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+        // Load tasks từ JSONbin
+        async function loadTasks() {
+            try {
+                const response = await fetch(`${API_URL}/latest`, {
+                    headers: {
+                        'X-Master-Key': MASTER_KEY
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load tasks');
+                }
+                
+                const data = await response.json();
+                const tasks = data.record.tasks || [];
+                renderTasks(tasks);
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                document.getElementById('taskList').innerHTML = 
+                    '<div class="error">❌ Lỗi tải dữ liệu. Vui lòng thử lại sau!</div>';
+            }
+        }
+
+        // Lưu tasks lên JSONbin
+        async function saveTasks(tasks) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': MASTER_KEY
+                    },
+                    body: JSON.stringify({ tasks })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to save tasks');
+                }
+            } catch (error) {
+                console.error('Error saving tasks:', error);
+                alert('❌ Lỗi khi lưu dữ liệu! Vui lòng thử lại.');
+            }
+        }
+
+        // Render tasks
+        function renderTasks(tasks) {
+            const taskList = document.getElementById('taskList');
+            
+            if (tasks.length === 0) {
+                taskList.innerHTML = '<div class="loading">📭 Chưa có công việc nào. Hãy thêm công việc đầu tiên!</div>';
+                updateStats(0, 0, 0);
+                return;
+            }
+            
+            taskList.innerHTML = '';
+            let active = 0;
+            let completed = 0;
+            
+            tasks.forEach((task, index) => {
+                if (task.completed) {
+                    completed++;
+                } else {
+                    active++;
+                }
+                
+                const taskDiv = document.createElement('div');
+                taskDiv.className = `task-item ${task.completed ? 'completed' : ''}`;
+                taskDiv.innerHTML = `
+                    <span class="task-text" onclick="toggleTask(${index})">
+                        ${task.completed ? '✅' : '⭕'} ${task.text}
+                    </span>
+                    <div class="task-actions">
+                        <button class="complete-btn" onclick="toggleTask(${index})">
+                            ${task.completed ? '↩️ Hoàn tác' : '✓ Xong'}
+                        </button>
+                        <button class="delete-btn" onclick="deleteTask(${index})">🗑️ Xóa</button>
+                    </div>
+                `;
+                taskList.appendChild(taskDiv);
+            });
+            
+            updateStats(tasks.length, active, completed);
+        }
+
+        // Cập nhật thống kê
+        function updateStats(total, active, completed) {
+            document.getElementById('totalTasks').textContent = total;
+            document.getElementById('activeTasks').textContent = active;
+            document.getElementById('completedTasks').textContent = completed;
+        }
+
+        // Thêm task mới
+        async function addTask() {
+            const input = document.getElementById('taskInput');
+            const text = input.value.trim();
+            
+            if (!text) {
+                alert('⚠️ Vui lòng nhập nội dung công việc!');
+                return;
+            }
+            
+            try {
+                // Load tasks hiện tại
+                const response = await fetch(`${API_URL}/latest`, {
+                    headers: { 'X-Master-Key': MASTER_KEY }
+                });
+                const data = await response.json();
+                const tasks = data.record.tasks || [];
+                
+                // Thêm task mới
+                tasks.push({
+                    text: text,
+                    completed: false,
+                    created: new Date().toISOString()
+                });
+                
+                // Lưu và reload
+                await saveTasks(tasks);
+                input.value = '';
+                await loadTasks();
+            } catch (error) {
+                console.error('Error adding task:', error);
+                alert('❌ Lỗi khi thêm công việc!');
+            }
+        }
+
+        // Toggle completed
+        async function toggleTask(index) {
+            try {
+                const response = await fetch(`${API_URL}/latest`, {
+                    headers: { 'X-Master-Key': MASTER_KEY }
+                });
+                const data = await response.json();
+                const tasks = data.record.tasks || [];
+                
+                tasks[index].completed = !tasks[index].completed;
+                
+                await saveTasks(tasks);
+                await loadTasks();
+            } catch (error) {
+                console.error('Error toggling task:', error);
+                alert('❌ Lỗi khi cập nhật công việc!');
+            }
+        }
+
+        // Xóa task
+        async function deleteTask(index) {
+            if (!confirm('🗑️ Bạn có chắc muốn xóa công việc này?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/latest`, {
+                    headers: { 'X-Master-Key': MASTER_KEY }
+                });
+                const data = await response.json();
+                const tasks = data.record.tasks || [];
+                
+                tasks.splice(index, 1);
+                
+                await saveTasks(tasks);
+                await loadTasks();
+            } catch (error) {
+                console.error('Error deleting task:', error);
+                alert('❌ Lỗi khi xóa công việc!');
+            }
+        }
+
+        // Enter để thêm
+        document.getElementById('taskInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        // Load tasks khi trang load
+        loadTasks();
+    </script>
+</body>
+</html>
