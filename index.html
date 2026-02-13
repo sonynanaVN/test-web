@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,36 +11,42 @@
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
+
         .container {
             max-width: 600px;
             margin: 50px auto;
             background: white;
             padding: 40px;
             border-radius: 15px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             animation: fadeIn 0.5s ease;
         }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
+
         h1 {
             color: #333;
             margin-bottom: 10px;
             text-align: center;
         }
+
         .subtitle {
             text-align: center;
             color: #666;
@@ -49,11 +56,13 @@
             background: #e8f5e9;
             border-radius: 5px;
         }
+
         .input-group {
             display: flex;
             gap: 10px;
             margin-bottom: 30px;
         }
+
         input {
             flex: 1;
             padding: 15px;
@@ -62,10 +71,12 @@
             font-size: 16px;
             transition: border 0.3s;
         }
+
         input:focus {
             outline: none;
             border-color: #667eea;
         }
+
         button {
             padding: 15px 30px;
             background: #667eea;
@@ -77,16 +88,20 @@
             font-weight: bold;
             transition: all 0.3s;
         }
+
         button:hover {
             background: #764ba2;
             transform: translateY(-2px);
         }
+
         button:active {
             transform: translateY(0);
         }
+
         #taskList {
             margin-top: 20px;
         }
+
         .task-item {
             display: flex;
             justify-content: space-between;
@@ -99,25 +114,30 @@
             transition: all 0.3s;
             animation: slideIn 0.3s ease;
         }
+
         @keyframes slideIn {
             from {
                 opacity: 0;
                 transform: translateX(-20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(0);
             }
         }
+
         .task-item:hover {
             background: #f0f0f0;
             transform: translateX(5px);
         }
+
         .task-item.completed {
             opacity: 0.6;
             text-decoration: line-through;
             border-left-color: #4CAF50;
         }
+
         .task-text {
             flex: 1;
             cursor: pointer;
@@ -125,32 +145,40 @@
             color: #333;
             user-select: none;
         }
+
         .task-actions {
             display: flex;
             gap: 10px;
         }
+
         .task-actions button {
             padding: 8px 15px;
             font-size: 14px;
         }
+
         .complete-btn {
             background: #4CAF50;
         }
+
         .complete-btn:hover {
             background: #45a049;
         }
+
         .delete-btn {
             background: #f44336;
         }
+
         .delete-btn:hover {
             background: #da190b;
         }
+
         .loading {
             text-align: center;
             padding: 40px;
             color: #666;
             font-size: 18px;
         }
+
         .stats {
             display: flex;
             justify-content: space-around;
@@ -159,20 +187,24 @@
             background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
             border-radius: 8px;
         }
+
         .stat-item {
             text-align: center;
         }
+
         .stat-number {
             font-size: 32px;
             font-weight: bold;
             color: #667eea;
         }
+
         .stat-label {
             font-size: 12px;
             color: #666;
             margin-top: 5px;
             text-transform: uppercase;
         }
+
         .error {
             background: #ffebee;
             color: #c62828;
@@ -183,16 +215,17 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>📝 My Todo List</h1>
         <p class="subtitle">💾 Dữ liệu lưu trên JSONbin Cloud - chia sẻ được giữa nhiều thiết bị!</p>
-        
+
         <div class="input-group">
             <input type="text" id="taskInput" placeholder="Thêm công việc mới...">
             <button onclick="addTask()">➕ Thêm</button>
         </div>
-        
+
         <div id="taskList">
             <div class="loading">⏳ Đang tải dữ liệu...</div>
         </div>
@@ -228,18 +261,18 @@
                         'X-Master-Key': MASTER_KEY
                     }
                 });
-                
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                
+
                 const data = await response.json();
                 console.log('Loaded data:', data);
                 const tasks = data.record.tasks || [];
                 renderTasks(tasks);
             } catch (error) {
                 console.error('Error loading tasks:', error);
-                document.getElementById('taskList').innerHTML = 
+                document.getElementById('taskList').innerHTML =
                     `<div class="error">❌ Lỗi tải dữ liệu: ${error.message}<br>Kiểm tra Console (F12) để xem chi tiết.</div>`;
             }
         }
@@ -251,43 +284,43 @@
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Master-Key': MASTER_KEY
+                        'X-Access-Key': '$2a$10$x1L85EpqGGKPEJq/3c.WPuTZM3c4xNm21p1RCrExteSB4e9p62fCe'
                     },
                     body: JSON.stringify({ tasks })
                 });
-                
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                
+
                 console.log('Tasks saved successfully');
             } catch (error) {
                 console.error('Error saving tasks:', error);
-                alert(`❌ Lỗi khi lưu dữ liệu: ${error.message}`);
             }
         }
+
 
         // Render tasks
         function renderTasks(tasks) {
             const taskList = document.getElementById('taskList');
-            
+
             if (tasks.length === 0) {
                 taskList.innerHTML = '<div class="loading">📭 Chưa có công việc nào. Hãy thêm công việc đầu tiên!</div>';
                 updateStats(0, 0, 0);
                 return;
             }
-            
+
             taskList.innerHTML = '';
             let active = 0;
             let completed = 0;
-            
+
             tasks.forEach((task, index) => {
                 if (task.completed) {
                     completed++;
                 } else {
                     active++;
                 }
-                
+
                 const taskDiv = document.createElement('div');
                 taskDiv.className = `task-item ${task.completed ? 'completed' : ''}`;
                 taskDiv.innerHTML = `
@@ -303,7 +336,7 @@
                 `;
                 taskList.appendChild(taskDiv);
             });
-            
+
             updateStats(tasks.length, active, completed);
         }
 
@@ -318,27 +351,29 @@
         async function addTask() {
             const input = document.getElementById('taskInput');
             const text = input.value.trim();
-            
+
             if (!text) {
                 alert('⚠️ Vui lòng nhập nội dung công việc!');
                 return;
             }
-            
+
             try {
                 // Load tasks hiện tại
                 const response = await fetch(`${API_URL}/latest`, {
-                    headers: { 'X-Master-Key': MASTER_KEY }
+                    headers: {
+                        'X-Access-Key': '$2a$10$x1L85EpqGGKPEJq/3c.WPuTZM3c4xNm21p1RCrExteSB4e9p62fCe'
+                    }
                 });
                 const data = await response.json();
                 const tasks = data.record.tasks || [];
-                
+
                 // Thêm task mới
                 tasks.push({
                     text: text,
                     completed: false,
                     created: new Date().toISOString()
                 });
-                
+
                 // Lưu và reload
                 await saveTasks(tasks);
                 input.value = '';
@@ -357,9 +392,9 @@
                 });
                 const data = await response.json();
                 const tasks = data.record.tasks || [];
-                
+
                 tasks[index].completed = !tasks[index].completed;
-                
+
                 await saveTasks(tasks);
                 await loadTasks();
             } catch (error) {
@@ -373,16 +408,16 @@
             if (!confirm('🗑️ Bạn có chắc muốn xóa công việc này?')) {
                 return;
             }
-            
+
             try {
                 const response = await fetch(`${API_URL}/latest`, {
                     headers: { 'X-Master-Key': MASTER_KEY }
                 });
                 const data = await response.json();
                 const tasks = data.record.tasks || [];
-                
+
                 tasks.splice(index, 1);
-                
+
                 await saveTasks(tasks);
                 await loadTasks();
             } catch (error) {
@@ -402,4 +437,5 @@
         loadTasks();
     </script>
 </body>
+
 </html>
